@@ -24,24 +24,16 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
     public ResponseEntity<?> processarPedido(Pedido pedido) {
-        try {
-            if (pedido.getProduto() == null || pedido.getProduto().isBlank() || pedido.getQuantidade() <= 0) {
-                return ResponseEntity.badRequest().body("Produto inválido ou quantidade <= 0");
-            }
-
-            pedido.setId(UUID.randomUUID());
-            pedido.setDataCriacao(LocalDateTime.now());
-            statusMap.put(pedido.getId(), "RECEBIDO");
-
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            String json = mapper.writeValueAsString(pedido);
-
-            rabbitTemplate.convertAndSend("pedidos.entrada.douglas", json);
-            return ResponseEntity.accepted().body(Map.of("id", pedido.getId()));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        if (pedido.getProduto() == null || pedido.getProduto().isBlank() || pedido.getQuantidade() <= 0) {
+            return ResponseEntity.badRequest().body("Produto inválido ou quantidade <= 0");
         }
+
+        pedido.setId(UUID.randomUUID());
+        pedido.setDataCriacao(LocalDateTime.now());
+        statusMap.put(pedido.getId(), "RECEBIDO");
+
+        rabbitTemplate.convertAndSend("pedidos.entrada.douglas", pedido);
+        return ResponseEntity.accepted().body(Map.of("id", pedido.getId()));
     }
 
     public ResponseEntity<?> statusPedido(String idStr) {

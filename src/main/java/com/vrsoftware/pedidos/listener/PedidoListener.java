@@ -27,7 +27,7 @@ public class PedidoListener {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    @RabbitListener(queues = "pedidos.entrada.douglas")
+    @RabbitListener(queues = "pedidos.entrada.douglas", containerFactory = "rabbitListenerContainerFactory")
     public void consumirPedido(Pedido pedido) {
         log.info("Início do processamento do pedido [{}]", pedido.getId());
         service.atualizarStatus(pedido.getId(), "PROCESSANDO");
